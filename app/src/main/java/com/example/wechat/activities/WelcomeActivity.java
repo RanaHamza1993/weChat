@@ -1,12 +1,12 @@
-package com.example.wechat;
-
-import androidx.appcompat.app.AppCompatActivity;
+package com.example.wechat.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
-public class WelcomeActivity extends AppCompatActivity {
+import com.example.wechat.R;
+
+public class WelcomeActivity extends BaseActivity {
 
     Handler handler;
     @Override

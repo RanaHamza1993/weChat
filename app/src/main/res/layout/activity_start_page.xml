@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:background="@drawable/start_page"
     android:layout_height="match_parent"
-    tools:context=".StartPageActivity">
+    tools:context=".activities.StartPageActivity">
 
     <Button
         android:id="@+id/already_account"

@@ -1,12 +1,13 @@
-package com.example.wechat;
+package com.example.wechat.activities;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.os.Bundle;
 import android.view.View;
 
-public class LoginActivity extends AppCompatActivity {
+import com.example.wechat.R;
+
+public class LoginActivity extends BaseActivity {
 
     private Toolbar toolbar;
     @Override

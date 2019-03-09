@@ -1,13 +1,13 @@
-package com.example.wechat;
-
-import androidx.appcompat.app.AppCompatActivity;
+package com.example.wechat.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-public class StartPageActivity extends AppCompatActivity {
+import com.example.wechat.R;
+
+public class StartPageActivity extends BaseActivity {
 
     private Button alreadyAccount;
     private Button needAccount;
@@ -34,5 +34,7 @@ public class StartPageActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+     //   showInfoMessage("Hello");
     }
 }

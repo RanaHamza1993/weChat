@@ -1,4 +1,4 @@
-package com.example.wechat;
+package com.example.wechat.activities;
 
 import android.app.Application;
 
