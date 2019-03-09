@@ -18,13 +18,13 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     void showSuccessMessage(String message){
-        Toasty.success(this,message, Toast.LENGTH_LONG,true).show();
+        Toasty.success(this,message, Toast.LENGTH_SHORT,true).show();
     }
     void showInfoMessage(String message){
-        Toasty.info(this,message, Toast.LENGTH_LONG,true).show();
+        Toasty.info(this,message, Toast.LENGTH_SHORT,true).show();
     }
     void showErrorMessage(String message){
-        Toasty.error(this,message, Toast.LENGTH_LONG,true).show();
+        Toasty.error(this,message, Toast.LENGTH_SHORT,true).show();
     }
     void showDialog(String title,String message){
         loadingBar=new ProgressDialog(this);

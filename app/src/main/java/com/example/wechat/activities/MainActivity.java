@@ -128,6 +128,11 @@ public class MainActivity extends BaseActivity {
             mAuth.signOut();
             logout();
         }
+        else if (item.getItemId()==R.id.main_setting)
+        {
+            Intent intent=new Intent(MainActivity.this,SettingsActivity.class);
+            startActivity(intent);
+        }
         return super.onOptionsItemSelected(item);
 
     }
