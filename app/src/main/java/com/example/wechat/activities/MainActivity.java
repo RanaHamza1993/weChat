@@ -26,19 +26,20 @@ import com.google.firebase.auth.FirebaseUser;
 public class MainActivity extends BaseActivity {
 
     ViewPager pager;
-   private FirebaseAuth mAuth;
-   private Toolbar toolbar;
-   TabLayout tabLayout;
+    private FirebaseAuth mAuth;
+    private Toolbar toolbar;
+    TabLayout tabLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        toolbar=findViewById(R.id.main_toolbar);
+        toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("We Chat");
-        pager=findViewById(R.id.main_pager);
-        tabLayout=findViewById(R.id.main_tab);
-        final PagerAdapter pagerAdapter =new FragmentPagerAdapter(getSupportFragmentManager()){
+        pager = findViewById(R.id.main_pager);
+        tabLayout = findViewById(R.id.main_tab);
+        final PagerAdapter pagerAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
 
 
             @Override
@@ -50,20 +51,20 @@ public class MainActivity extends BaseActivity {
             @Override
             public Fragment getItem(int position) {
 
-               switch (position){
-                   case 0:
-                       Fragment fragment=new RequestsFragment();
-                       return fragment;
-                   case 1:
-                       Fragment fragment1=new ChatsFragment();
-                       return fragment1;
-                   case 2:
-                       Fragment fragment2=new FriendsFragment();
-                       return fragment2;
-                       default:
-                           return null;
+                switch (position) {
+                    case 0:
+                        Fragment fragment = new RequestsFragment();
+                        return fragment;
+                    case 1:
+                        Fragment fragment1 = new ChatsFragment();
+                        return fragment1;
+                    case 2:
+                        Fragment fragment2 = new FriendsFragment();
+                        return fragment2;
+                    default:
+                        return null;
 
-               }
+                }
 
             }
 
@@ -92,30 +93,30 @@ public class MainActivity extends BaseActivity {
 
 
 //        tabLayout.getTabAt(0).setText(pagerAdapter.getPageTitle(0));
-  //      tabLayout.getTabAt(1).setText(pagerAdapter.getPageTitle(1));
-  //      tabLayout.getTabAt(2).setText(pagerAdapter.getPageTitle(2));
-    //FirebaseApp.initializeApp(getApplicationContext());
-        mAuth=FirebaseAuth.getInstance();
+        //      tabLayout.getTabAt(1).setText(pagerAdapter.getPageTitle(1));
+        //      tabLayout.getTabAt(2).setText(pagerAdapter.getPageTitle(2));
+        //FirebaseApp.initializeApp(getApplicationContext());
+        mAuth = FirebaseAuth.getInstance();
 
     }
+
     @Override
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser==null){
+        if (currentUser == null) {
 
             logout();
         }
-       // updateUI(currentUser);
+        // updateUI(currentUser);
     }
-
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
-        getMenuInflater().inflate(R.menu.main_menu,menu);
+        getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
 
     }
@@ -123,21 +124,23 @@ public class MainActivity extends BaseActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        if(item.getItemId()==R.id.main_logout){
+        if (item.getItemId() == R.id.main_logout) {
 
             mAuth.signOut();
             logout();
-        }
-        else if (item.getItemId()==R.id.main_setting)
-        {
-            Intent intent=new Intent(MainActivity.this,SettingsActivity.class);
+        } else if (item.getItemId() == R.id.main_setting) {
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent);
+        } else if (item.getItemId() == R.id.main_all_users) {
+            Intent intent = new Intent(MainActivity.this, AllUsersActivity.class);
             startActivity(intent);
         }
         return super.onOptionsItemSelected(item);
 
     }
+
     private void logout() {
-        Intent intent=new Intent(MainActivity.this,StartPageActivity.class);
+        Intent intent = new Intent(MainActivity.this, StartPageActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();

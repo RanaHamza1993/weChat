@@ -17,8 +17,11 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.wechat.R;
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -83,6 +86,10 @@ public class SettingsActivity extends BaseActivity {
                 String thumbImg=dataSnapshot.child("user_thumb_image").getValue().toString();
                 name.setText(nam);
                 status.setText(stat);
+                if(img.equals("default_profile"))
+                    Glide.with(getApplicationContext()).load(R.drawable.default_profile).placeholder(R.drawable.default_profile).into(userProfile);
+                else
+                Glide.with(getApplicationContext()).load(img).placeholder(R.drawable.default_profile).into(userProfile);
 
 
             }
@@ -101,6 +108,16 @@ public class SettingsActivity extends BaseActivity {
                 galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
                 galleryIntent.setType("image/*");
                 startActivityForResult(galleryIntent,ImageRequestCode);
+            }
+        });
+
+        changeStatus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent=new Intent(SettingsActivity.this,ChangeStatusActivity.class);
+                intent.putExtra("user_status",status.getText().toString());
+                startActivity(intent);
             }
         });
     }
@@ -131,6 +148,22 @@ public class SettingsActivity extends BaseActivity {
                         if(task.isSuccessful()){
 
                             showSuccessMessage("Image uploaded Successfully");
+                            Task<Uri> uriTask=task.getResult().getStorage().getDownloadUrl();
+                            uriTask.addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+
+                                    userDataReference.child("user_image").setValue(uri.toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+
+                                            showSuccessMessage("Image updated successfully");
+                                        }
+
+                                    });
+                                }
+                            });
+
 
                         } else{
 
