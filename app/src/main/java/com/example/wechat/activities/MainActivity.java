@@ -22,6 +22,8 @@ import com.example.wechat.fragments.RequestsFragment;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class MainActivity extends BaseActivity {
 
@@ -29,7 +31,8 @@ public class MainActivity extends BaseActivity {
     private FirebaseAuth mAuth;
     private Toolbar toolbar;
     TabLayout tabLayout;
-
+    FirebaseUser currentUser;
+    private DatabaseReference databaseReference;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,6 +100,9 @@ public class MainActivity extends BaseActivity {
         //      tabLayout.getTabAt(2).setText(pagerAdapter.getPageTitle(2));
         //FirebaseApp.initializeApp(getApplicationContext());
         mAuth = FirebaseAuth.getInstance();
+        String mid=mAuth.getCurrentUser().getUid();
+        databaseReference= FirebaseDatabase.getInstance().getReference().child("Users").child(mid);
+
 
     }
 
@@ -104,14 +110,22 @@ public class MainActivity extends BaseActivity {
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+       currentUser = mAuth.getCurrentUser();
         if (currentUser == null) {
 
             logout();
+        }else if(currentUser!=null){
+            databaseReference.child("isOnline").setValue(true);
         }
         // updateUI(currentUser);
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(currentUser!=null)
+        databaseReference.child("isOnline").setValue(false);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

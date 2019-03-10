@@ -235,11 +235,11 @@ public class ProfileActivity extends BaseActivity {
         Calendar date=Calendar.getInstance();
         SimpleDateFormat currentDate=new SimpleDateFormat("dd-MMMM-yyyy");
         final String saveCurrentDate=currentDate.format(date.getTime());
-        firendsference.child(muid).child(receiver_uid).setValue(saveCurrentDate).addOnSuccessListener(new OnSuccessListener<Void>() {
+        firendsference.child(muid).child(receiver_uid).child("date").setValue(saveCurrentDate).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
 
-                firendsference.child(receiver_uid).child(muid).setValue(saveCurrentDate).addOnSuccessListener(new OnSuccessListener<Void>() {
+                firendsference.child(receiver_uid).child(muid).child("date").setValue(saveCurrentDate).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
 
@@ -256,6 +256,7 @@ public class ProfileActivity extends BaseActivity {
                                                 sendRequest.setEnabled(true);
                                                 currentState = "firends";
                                                 sendRequest.setText("UnFriend this person");
+                                                declineRequest.setVisibility(View.GONE);
                                             }
                                         }
                                     });
