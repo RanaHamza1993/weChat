@@ -10,10 +10,14 @@ import android.widget.Button;
 
 import com.example.wechat.R;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 public class LoginActivity extends BaseActivity {
 
@@ -22,12 +26,14 @@ public class LoginActivity extends BaseActivity {
     private TextInputEditText email;
     private TextInputEditText password;
     private Button login;
+    private DatabaseReference userReference;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         toolbar=findViewById(R.id.login_toolbar);
         mAuth=FirebaseAuth.getInstance();
+        userReference= FirebaseDatabase.getInstance().getReference().child("Users");
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("Login");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -67,10 +73,19 @@ public class LoginActivity extends BaseActivity {
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if(task.isSuccessful()){
 
-                        Intent intent=new Intent(LoginActivity.this,MainActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        finish();
+
+                        String currentUser=mAuth.getCurrentUser().getUid();
+                        String deviceToken= FirebaseInstanceId.getInstance().getToken();
+                        userReference.child(currentUser).child("device_token").setValue(deviceToken).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Intent intent=new Intent(LoginActivity.this,MainActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(intent);
+                                finish();
+                            }
+                        });
+
                     }
                     else{
                         showErrorMessage("Invalid Email or passowrd");

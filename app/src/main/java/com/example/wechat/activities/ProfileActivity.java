@@ -39,6 +39,7 @@ public class ProfileActivity extends BaseActivity {
     private DatabaseReference userDataReference;
     private DatabaseReference firendRequestReference;
     private DatabaseReference firendsference;
+    private DatabaseReference notificationReference;
     private FirebaseAuth mAuth;
     Map userMap=new HashMap();
     String receiver_uid="";
@@ -55,7 +56,9 @@ public class ProfileActivity extends BaseActivity {
         muid=mAuth.getCurrentUser().getUid();
         userDataReference= FirebaseDatabase.getInstance().getReference().child("Users").child(receiver_uid);
         firendRequestReference=FirebaseDatabase.getInstance().getReference().child("Friend_Requests");
+        notificationReference=FirebaseDatabase.getInstance().getReference().child("Notifications");
         firendRequestReference.keepSynced(true);
+        notificationReference.keepSynced(true);
         firendsference=FirebaseDatabase.getInstance().getReference().child("Friends");
         firendsference.keepSynced(true);
         toolbar=findViewById(R.id.profile_toolbar);
@@ -90,10 +93,11 @@ public class ProfileActivity extends BaseActivity {
                 firendRequestReference.child(muid).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.exists()) {
+
                             if (dataSnapshot.hasChild(receiver_uid)) {
                                 String req_type = dataSnapshot.child(receiver_uid).child("request_type").getValue()
                                         .toString();
+
                                 if (req_type.equals("sent")) {
                                     currentState = "request_sent";
                                     sendRequest.setText("Cancel Request");
@@ -101,11 +105,12 @@ public class ProfileActivity extends BaseActivity {
                                 } else if (req_type.equals("received")) {
                                     currentState = "request_received";
                                     sendRequest.setText("Accept this Request");
+                                    declineRequest.setVisibility(View.VISIBLE);
                                 }
 
 
                             }
-                        }
+
                         else{
                             firendsference.child(muid).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
@@ -149,6 +154,8 @@ public class ProfileActivity extends BaseActivity {
             declineRequest.setVisibility(View.VISIBLE);
         }
 
+
+        declineRequest.setVisibility(View.GONE);
             sendRequest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -174,6 +181,31 @@ public class ProfileActivity extends BaseActivity {
 
             }
         });
+
+            declineRequest.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    declineFriendRequest();
+                }
+            });
+    }
+
+    private void declineFriendRequest() {
+        firendRequestReference.child(muid).child(receiver_uid).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+
+                firendRequestReference.child(receiver_uid).child(muid).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+
+                        sendRequest.setText("Send Request");
+                        currentState="not_friends";
+                        declineRequest.setVisibility(View.GONE);
+                    }
+                });
+            }
+        });
     }
 
     private void unFriend() {
@@ -189,7 +221,9 @@ public class ProfileActivity extends BaseActivity {
 
                         currentState="not_friends";
                         sendRequest.setText("Send Request");
+                        declineRequest.setVisibility(View.GONE);
                     }
+
                 });
             }
         });
@@ -248,6 +282,7 @@ public class ProfileActivity extends BaseActivity {
                                 sendRequest.setEnabled(true);
                                 currentState = "not_friends";
                                 sendRequest.setText("Send Request");
+                                declineRequest.setVisibility(View.GONE);
                             }
                         }
                     });
@@ -267,11 +302,24 @@ public class ProfileActivity extends BaseActivity {
                             .setValue("received").addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
-
                             if(task.isSuccessful()){
-                                sendRequest.setEnabled(true);
-                                currentState="request_sent";
-                                sendRequest.setText("Cancel Request");
+                            HashMap<String,String> notificationsMap=new HashMap<String, String>();
+                            notificationsMap.put("from",muid);
+                            notificationsMap.put("type","request");
+                            notificationReference.child(receiver_uid).push().setValue(notificationsMap)
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        sendRequest.setEnabled(true);
+                                        currentState = "request_sent";
+                                        sendRequest.setText("Cancel Request");
+                                        declineRequest.setVisibility(View.GONE);
+                                    }
+                                }
+                            });
+
+
                             }
                         }
                     });

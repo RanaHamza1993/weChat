@@ -17,7 +17,21 @@
         android:roundIcon="@mipmap/app_logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.ProfileActivity" android:parentActivityName=".activities.AllUsersActivity"></activity>
+
+
+        <service android:name=".utils.FirebaseRequestService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <activity android:name=".activities.ProfileActivity" android:parentActivityName=".activities.AllUsersActivity">
+            <intent-filter>
+                <action android:name="com.example.wechat_Target_Notification"></action>
+                <category android:name="android.intent.category.DEFAULT"></category>
+
+            </intent-filter>
+        </activity>
         <activity
             android:name=".activities.AllUsersActivity"
             android:parentActivityName=".activities.MainActivity" />

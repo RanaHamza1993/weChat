@@ -17,6 +17,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 public class SignupActivity extends BaseActivity {
 
@@ -87,11 +88,12 @@ public class SignupActivity extends BaseActivity {
                         // Toasty.success(SignupActivity.this, "Register Successfully", Toast.LENGTH_LONG, true).show();
 
                         String uid = mAuth.getCurrentUser().getUid();
-
+                        String deviceToken= FirebaseInstanceId.getInstance().getToken();
                         userDefaultDataReference = FirebaseDatabase.getInstance().getReference().child("Users").child(uid);
                         userDefaultDataReference.child("user_name").setValue(name);
                         // userDefaultDataReference.child("user_email").setValue(em);
                         //  userDefaultDataReference.child("user_passowrd").setValue(pwd);
+                        userDefaultDataReference.child("device_token").setValue(deviceToken);
                         userDefaultDataReference.child("user_status").setValue("Hey i am using weChat developed by Hamza");
                         userDefaultDataReference.child("user_image").setValue("default_profile");
                         userDefaultDataReference.child("user_thumb_image").setValue("default_profile")
