@@ -8,7 +8,7 @@
     tools:context=".activities.SettingsActivity">
 
     <include
-        android:id="@+id/setting_toolbar"
+        android:id="@+id/profile_toolbar"
         layout="@layout/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -20,11 +20,12 @@
         android:id="@+id/profile_image"
         android:layout_width="128dp"
         android:layout_height="128dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:src="@drawable/default_profile"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.53"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/setting_toolbar" />
+        app:layout_constraintTop_toBottomOf="@+id/profile_toolbar" />
 
     <TextView
         android:id="@+id/user_name"
@@ -55,33 +56,32 @@
         app:layout_constraintTop_toBottomOf="@+id/user_name" />
 
     <Button
-        android:id="@+id/change_image"
+        android:id="@+id/send_request"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="35dp"
-        android:layout_marginTop="8dp"
         android:layout_marginRight="35dp"
         android:layout_marginBottom="8dp"
         android:background="@android:color/background_light"
-        android:text="Change Image"
+        android:text="Send Request"
         android:textColor="@android:color/holo_red_dark"
         android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/change_status"
+        app:layout_constraintBottom_toTopOf="@+id/decline_request"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.771"
+        app:layout_constraintHorizontal_bias="0.228"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/user_status"
-        app:layout_constraintVertical_bias="0.98" />
+        app:layout_constraintVertical_bias="0.96" />
 
     <Button
-        android:id="@+id/change_status"
+        android:id="@+id/decline_request"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="35dp"
         android:layout_marginRight="35dp"
         android:layout_marginBottom="32dp"
         android:background="@android:color/background_light"
-        android:text="Change Status"
+        android:text="Decline Request"
         android:textColor="@android:color/holo_red_dark"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"

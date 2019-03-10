@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +25,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
 
 public class AllUsersActivity extends AppCompatActivity {
 
@@ -38,7 +42,7 @@ public class AllUsersActivity extends AppCompatActivity {
         toolbar=findViewById(R.id.allusers_toolbar);
        // mAuth= FirebaseAuth.getInstance();
         setSupportActionBar(toolbar);
-        dbreference= FirebaseDatabase.getInstance().getReference();
+        dbreference= FirebaseDatabase.getInstance().getReference().child("Users");
         getSupportActionBar().setTitle("All Users");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -51,6 +55,7 @@ public class AllUsersActivity extends AppCompatActivity {
 
         allusersRecycler=findViewById(R.id.allusers_recycler);
         allusersRecycler.setLayoutManager(new LinearLayoutManager(this));
+        dbreference.keepSynced(true);
       //  allusersRecycler.setAdapter(firebaseRecyclerAdapter);
     }
 
@@ -59,7 +64,7 @@ public class AllUsersActivity extends AppCompatActivity {
         super.onStart();
 
 
-        Query query=dbreference.child("Users");
+        Query query=dbreference;
         FirebaseRecyclerOptions<UserModel> options =
                 new FirebaseRecyclerOptions.Builder<UserModel>()
                         .setQuery(query, UserModel.class)
@@ -67,16 +72,30 @@ public class AllUsersActivity extends AppCompatActivity {
        firebaseRecyclerAdapter=new FirebaseRecyclerAdapter<UserModel, UsersViewHolder>
                 (options) {
             @Override
-            protected void onBindViewHolder(@NonNull UsersViewHolder usersViewHolder, int i, @NonNull UserModel userModel) {
+            protected void onBindViewHolder(@NonNull final UsersViewHolder usersViewHolder,final int position, @NonNull UserModel userModel) {
 
                 usersViewHolder.userName.setText(userModel.getUser_name());
                 usersViewHolder.userStatus.setText(userModel.getUser_status());
                 if(userModel.getUser_image().equals("default_profile"))
                 Glide.with(getApplicationContext()).load(R.drawable.default_profile).placeholder(R.drawable.default_profile).into(usersViewHolder.userImg);
                 else
-                    Glide.with(getApplicationContext()).load(userModel.getUser_image()).placeholder(R.drawable.default_profile).into(usersViewHolder.userImg);
+                    Glide.with(getApplicationContext()).load(userModel.getUser_thumb_image()).
+                            placeholder(R.drawable.default_profile).into(usersViewHolder.userImg);
 
 
+
+
+
+                usersViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        getRef(position).getKey();
+                        Intent intent=new Intent(AllUsersActivity.this,ProfileActivity.class);
+                        intent.putExtra("uid",getRef(position).getKey());
+                        startActivity(intent);
+                    }
+                });
             }
 
             @NonNull

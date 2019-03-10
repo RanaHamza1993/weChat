@@ -6,12 +6,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import de.hdodenhof.circleimageview.CircleImageView;
+import id.zelory.compressor.Compressor;
 
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -32,8 +35,17 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SettingsActivity extends BaseActivity {
 
@@ -47,7 +59,10 @@ public class SettingsActivity extends BaseActivity {
     private DatabaseReference userDataReference;
     private FirebaseAuth mAuth;
     private StorageReference databasestorage;
+    private StorageReference thumbImagetorage;
+    Map userMap=new HashMap();
     String uid="";
+    Bitmap thumb_bitmap;
 
     private CircleImageView userProfile;
     @Override
@@ -57,7 +72,9 @@ public class SettingsActivity extends BaseActivity {
         mAuth=FirebaseAuth.getInstance();
         uid=mAuth.getCurrentUser().getUid();
         userDataReference= FirebaseDatabase.getInstance().getReference().child("Users").child(uid);
+        userDataReference.keepSynced(true);
         databasestorage= FirebaseStorage.getInstance().getReference().child("Profile_IMages");
+        thumbImagetorage= FirebaseStorage.getInstance().getReference().child("thumb_IMages");
         toolbar=findViewById(R.id.setting_toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("Settings");
@@ -89,7 +106,8 @@ public class SettingsActivity extends BaseActivity {
                 if(img.equals("default_profile"))
                     Glide.with(getApplicationContext()).load(R.drawable.default_profile).placeholder(R.drawable.default_profile).into(userProfile);
                 else
-                Glide.with(getApplicationContext()).load(img).placeholder(R.drawable.default_profile).into(userProfile);
+                Glide.with(getApplicationContext()).load(thumbImg).
+                        placeholder(R.drawable.default_profile).into(userProfile);
 
 
             }
@@ -130,6 +148,9 @@ public class SettingsActivity extends BaseActivity {
 
 
             Uri imageUri=data.getData();
+
+
+
             CropImage.activity()
                     .setGuidelines(CropImageView.Guidelines.ON)
                     .setAspectRatio(1,1)
@@ -138,34 +159,79 @@ public class SettingsActivity extends BaseActivity {
 
         }
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            showDialog("Uploading Image","Please wait while image uploading");
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 Uri resultUri = result.getUri();
+
+                File thumbImagePath=new File(resultUri.getPath());
+
+                try{
+
+                    thumb_bitmap = new Compressor(this)
+                            .setMaxWidth(200)
+                            .setMaxHeight(200)
+                            .setQuality(60)
+                            .compressToBitmap(thumbImagePath);
+
+                }catch (IOException e){ }
+
+                ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream();
+                thumb_bitmap.compress(Bitmap.CompressFormat.JPEG,50,byteArrayOutputStream);
+                final byte[] thumb_byte=byteArrayOutputStream.toByteArray();
+
                 StorageReference filePath=databasestorage.child(uid+".jpg");
+                final StorageReference thumbFilePath=thumbImagetorage.child(uid+".jpg");
                 filePath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
                         if(task.isSuccessful()){
 
-                            showSuccessMessage("Image uploaded Successfully");
-                            Task<Uri> uriTask=task.getResult().getStorage().getDownloadUrl();
-                            uriTask.addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            //showSuccessMessage("Image uploaded Successfully");
+                            final Task<Uri> uriTask=task.getResult().getStorage().getDownloadUrl();
+                            UploadTask uploadTask=thumbFilePath.putBytes(thumb_byte);
+                            uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                                 @Override
-                                public void onSuccess(Uri uri) {
+                                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> thumb_task) {
 
-                                    userDataReference.child("user_image").setValue(uri.toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    Task<Uri> thumb_url=thumb_task.getResult().getStorage().getDownloadUrl();
+                                    thumb_url.addOnSuccessListener(new OnSuccessListener<Uri>() {
+
                                         @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
+                                        public void onSuccess(Uri uri) {
 
-                                            showSuccessMessage("Image updated successfully");
+                                            userMap.put("user_image",uri.toString());
+                                            uriTask.addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                                @Override
+                                                public void onSuccess(Uri uri) {
+                                                    userMap.put("user_thumb_image",uri.toString());
+                                                    userDataReference.updateChildren(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<Void> task) {
+
+                                                           // showSuccessMessage("Image updated successfully");
+                                                            dismissDialog();
+                                                        }
+
+                                                    });
+                                                }
+                                            });
+
+//                                            userDataReference.child("user_thumb_image").setValue(uri.toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+//                                                @Override
+//                                                public void onComplete(@NonNull Task<Void> task) {
+//                                                    showSuccessMessage("thumb Image Uploaded Successfully");
+//                                                }
+//                                            });
                                         }
-
                                     });
                                 }
                             });
 
 
+
                         } else{
+                            dismissDialog();
 
                             showErrorMessage("Error occured while uploading");
                         }
@@ -174,6 +240,7 @@ public class SettingsActivity extends BaseActivity {
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
             }
+
         }
 //            CropImage.activity(imageUri)
 //                    .start(this);

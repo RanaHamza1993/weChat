@@ -94,7 +94,7 @@ public class SignupActivity extends BaseActivity {
                         //  userDefaultDataReference.child("user_passowrd").setValue(pwd);
                         userDefaultDataReference.child("user_status").setValue("Hey i am using weChat developed by Hamza");
                         userDefaultDataReference.child("user_image").setValue("default_profile");
-                        userDefaultDataReference.child("user_thumb_image").setValue("default_image")
+                        userDefaultDataReference.child("user_thumb_image").setValue("default_profile")
                                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {

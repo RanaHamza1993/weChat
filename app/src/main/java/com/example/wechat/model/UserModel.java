@@ -7,16 +7,18 @@ public class UserModel {
     String user_name;
     String user_status;
     String user_image;
+    String user_thumb_image;
 
     UserModel(){
 
     }
 
 
-    public UserModel(String user_name, String user_status, String user_image) {
+    public UserModel(String user_name, String user_status, String user_image,String user_thumb_image) {
         this.user_name = user_name;
         this.user_status = user_status;
         this.user_image = user_image;
+        this.user_thumb_image=user_thumb_image;
     }
 
 
@@ -42,5 +44,13 @@ public class UserModel {
 
     public void setUser_image(String user_image) {
         this.user_image = user_image;
+    }
+
+    public String getUser_thumb_image() {
+        return user_thumb_image;
+    }
+
+    public void setUser_thumb_image(String user_thumb_image) {
+        this.user_thumb_image = user_thumb_image;
     }
 }
