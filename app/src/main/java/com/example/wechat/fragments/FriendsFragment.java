@@ -35,7 +35,7 @@ import com.google.firebase.database.ValueEventListener;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class FriendsFragment extends Fragment {
+public class FriendsFragment extends BaseFragment {
 
 
     private RecyclerView friendsRecycler;
@@ -44,6 +44,9 @@ public class FriendsFragment extends Fragment {
     private View v;
     private String uid;
     private DatabaseReference usersReference;
+    String uname;
+    String muid;
+    DataSnapshot dataSnap;
     FirebaseRecyclerAdapter<FriendsModel, FriendsFragment.UsersViewHolder> firebaseRecyclerAdapter;
 
     public FriendsFragment() {
@@ -85,11 +88,13 @@ public class FriendsFragment extends Fragment {
 
              //   usersViewHolder.userName.setText(userModel.getUser_name());
                usersViewHolder.userStatus.setText(friendsModel.getDate());
-               String muid=getRef(position).getKey();
+                muid=getRef(position).getKey();
                usersReference.child(muid).addValueEventListener(new ValueEventListener() {
                    @Override
                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
+                       dataSnap=dataSnapshot;
+                       uname=dataSnapshot.child("user_name").getValue().toString();
                        usersViewHolder.userName.setText(dataSnapshot.child("user_name").getValue().toString());
                        if(dataSnapshot.child("user_thumb_image").getValue().toString().equals("default_profile"))
                            Glide.with(getActivity().getApplicationContext()).load(R.drawable.default_profile).placeholder(R.drawable.default_profile).into(usersViewHolder.userImg);
@@ -97,9 +102,9 @@ public class FriendsFragment extends Fragment {
                            Glide.with(getActivity().getApplicationContext()).load(dataSnapshot.child("user_thumb_image").getValue().toString()).placeholder(R.drawable.default_profile).into(usersViewHolder.userImg);
 
 
-                       Boolean isOnline=(boolean) dataSnapshot.child("isOnline").getValue();
+                       String isOnline= dataSnapshot.child("isOnline").getValue().toString();
 
-                       if(isOnline)
+                       if(isOnline.equals("Online"))
                            usersViewHolder.onlineStatus.setVisibility(View.VISIBLE);
                        else
                            usersViewHolder.onlineStatus.setVisibility(View.GONE);
@@ -122,10 +127,21 @@ public class FriendsFragment extends Fragment {
                     @Override
                     public void onClick(View view) {
 
-                        getRef(position).getKey();
-                        Intent intent = new Intent(getActivity(), ProfileActivity.class);
-                        intent.putExtra("uid", getRef(position).getKey());
-                        startActivity(intent);
+                        CharSequence options[]=new CharSequence[]{
+
+
+                                uname+"'s Profile",
+                                "Send Message"
+
+                        };
+                        showDialog("Select Options",options,uname,muid,dataSnap);
+
+
+//                        getRef(position).getKey();
+//                        Intent intent = new Intent(getActivity(), ProfileActivity.class);
+//                        intent.putExtra("uid", getRef(position).getKey());
+//                        startActivity(intent);
+
                     }
                 });
             }

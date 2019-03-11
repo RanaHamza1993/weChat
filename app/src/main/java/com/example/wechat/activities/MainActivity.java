@@ -24,6 +24,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 
 public class MainActivity extends BaseActivity {
 
@@ -115,7 +116,7 @@ public class MainActivity extends BaseActivity {
 
             logout();
         }else if(currentUser!=null){
-            databaseReference.child("isOnline").setValue(true);
+            databaseReference.child("isOnline").setValue("Online");
         }
         // updateUI(currentUser);
     }
@@ -124,7 +125,7 @@ public class MainActivity extends BaseActivity {
     protected void onStop() {
         super.onStop();
         if(currentUser!=null)
-        databaseReference.child("isOnline").setValue(false);
+        databaseReference.child("isOnline").setValue(ServerValue.TIMESTAMP);
     }
 
     @Override
@@ -140,6 +141,10 @@ public class MainActivity extends BaseActivity {
 
         if (item.getItemId() == R.id.main_logout) {
 
+            if(currentUser!=null){
+                databaseReference.child("isOnline").setValue(ServerValue.TIMESTAMP);
+
+            }
             mAuth.signOut();
             logout();
         } else if (item.getItemId() == R.id.main_setting) {
