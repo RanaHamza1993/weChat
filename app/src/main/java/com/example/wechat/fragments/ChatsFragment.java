@@ -14,7 +14,7 @@ import com.example.wechat.R;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ChatsFragment extends Fragment {
+public class ChatsFragment extends BaseFragment {
 
 
     public ChatsFragment() {

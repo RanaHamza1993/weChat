@@ -1,6 +1,7 @@
 package com.example.wechat.activities;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -10,6 +11,8 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -20,18 +23,27 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ChatActivity extends BaseActivity {
 
+    private ImageButton selectImage;
+    private ImageButton sendMessage;
+    private EditText inputMessage;
     private Toolbar toolbar;
     private DatabaseReference userDataReference;
+    private DatabaseReference rootReference;
     private FirebaseAuth mAuth;
     String receiver_id;
     String receiver_name;
     TextView userName;
     TextView lastSeen;
     CircleImageView userImage;
+    String messageSenderID;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,12 +54,17 @@ public class ChatActivity extends BaseActivity {
         showInfoMessage(receiver_name);
         showInfoMessage(receiver_id);
 
+        selectImage=findViewById(R.id.select_image);
+        sendMessage=findViewById(R.id.send_message);
+        inputMessage=findViewById(R.id.input_message);
         toolbar=findViewById(R.id.chat_toolbar);
         setSupportActionBar(toolbar);
        // getSupportActionBar().setTitle("Chats");
 
         mAuth=FirebaseAuth.getInstance();
         userDataReference= FirebaseDatabase.getInstance().getReference().child("Users").child(receiver_id);
+        rootReference= FirebaseDatabase.getInstance().getReference();
+        messageSenderID=mAuth.getCurrentUser().getUid();
 
         ActionBar actionBar=getSupportActionBar();
 
@@ -93,5 +110,52 @@ public class ChatActivity extends BaseActivity {
             }
         });
 
+        sendMessage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+
+                sendMessageFun();
+            }
+        });
+    }
+
+    private void sendMessageFun() {
+        String message=inputMessage.getText().toString();
+        if(message.isEmpty())
+            showErrorMessage("Please Enter some message");
+        else{
+
+            String message_sender_ref="Messages/"+messageSenderID+"/"+receiver_id;
+            String message_receiver_ref="Messages/"+receiver_id+"/"+messageSenderID;
+
+            DatabaseReference user_message_key=rootReference.child("Messages").child(messageSenderID)
+                    .child(receiver_id).push();
+
+            String message_push_id=user_message_key.getKey();
+
+            Map messageTextBody=new HashMap();
+            messageTextBody.put("message",message);
+            messageTextBody.put("seen",false);
+            messageTextBody.put("type","text");
+            messageTextBody.put("time", ServerValue.TIMESTAMP);
+
+            Map messageBodyDetail=new HashMap();
+            messageBodyDetail.put(message_sender_ref+"/"+message_push_id,messageTextBody);
+            messageBodyDetail.put(message_receiver_ref+"/"+message_push_id,messageTextBody);
+
+            rootReference.updateChildren(messageBodyDetail, new DatabaseReference.CompletionListener() {
+                @Override
+                public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
+
+                    if(databaseError!=null){
+
+                        showErrorMessage(databaseError.getMessage().toString());
+                    }
+                    inputMessage.setText("");
+                }
+            });
+
+        }
     }
 }

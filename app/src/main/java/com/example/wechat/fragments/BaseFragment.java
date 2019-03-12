@@ -2,16 +2,19 @@ package com.example.wechat.fragments;
 
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import es.dmoral.toasty.Toasty;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.wechat.R;
 import com.example.wechat.activities.ChatActivity;
@@ -27,6 +30,7 @@ import com.google.firebase.database.ServerValue;
  */
 public class BaseFragment extends Fragment {
 
+    ProgressDialog loadingBar;
     private DatabaseReference usersReference;
     public BaseFragment() {
         // Required empty public constructor
@@ -38,6 +42,26 @@ public class BaseFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         return null;
+    }
+
+    void showSuccessMessage(String message){
+        Toasty.success(getContext(),message, Toast.LENGTH_SHORT,true).show();
+    }
+    void showInfoMessage(String message){
+        Toasty.info(getContext(),message, Toast.LENGTH_SHORT,true).show();
+    }
+    void showErrorMessage(String message){
+        Toasty.error(getContext(),message, Toast.LENGTH_SHORT,true).show();
+    }
+    void showDialog(String title,String message){
+        loadingBar=new ProgressDialog(getContext());
+        loadingBar.setTitle(title);
+        loadingBar.setMessage(message);
+        loadingBar.show();
+    }
+    void dismissDialog(){
+        if(loadingBar.isShowing())
+            loadingBar.dismiss();
     }
 
     public void showDialog(String title, CharSequence options[], String username, String uid, DataSnapshot dataSnapshot){
