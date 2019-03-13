@@ -1,6 +1,7 @@
 package com.example.wechat.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 
@@ -18,9 +19,17 @@ public class WelcomeActivity extends BaseActivity {
             @Override
             public void run() {
 
-                Intent intent=new Intent(WelcomeActivity.this,MainActivity.class);
-                startActivity(intent);
-                finish();
+                SharedPreferences prefs = getSharedPreferences("login", MODE_PRIVATE);
+                String token = prefs.getString("token", "");
+                if(token.equals("")){
+                    Intent intent = new Intent(WelcomeActivity.this, StartPageActivity.class);
+                    startActivity(intent);
+                    finish();
+                }else {
+                    Intent intent = new Intent(WelcomeActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
             }
         },5000);
     }

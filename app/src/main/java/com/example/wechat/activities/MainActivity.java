@@ -10,7 +10,9 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -145,6 +147,10 @@ public class MainActivity extends BaseActivity {
                 databaseReference.child("isOnline").setValue(ServerValue.TIMESTAMP);
 
             }
+            SharedPreferences sharedpreferences = getSharedPreferences("login", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedpreferences.edit();
+            editor.putString("token", "");
+            editor.commit();
             mAuth.signOut();
             logout();
         } else if (item.getItemId() == R.id.main_setting) {

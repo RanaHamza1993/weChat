@@ -5,6 +5,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import android.content.Context;
@@ -17,8 +19,13 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.wechat.R;
+import com.example.wechat.adapters.MessageAdapter;
+import com.example.wechat.model.Messages;
+import com.example.wechat.model.UserModel;
 import com.example.wechat.utils.LastSeenTime;
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -26,7 +33,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ChatActivity extends BaseActivity {
@@ -44,13 +53,23 @@ public class ChatActivity extends BaseActivity {
     TextView lastSeen;
     CircleImageView userImage;
     String messageSenderID;
+    RecyclerView messagesRecycler;
+    private final List<Messages> messageList=new ArrayList<Messages>();
+    private MessageAdapter adapter;
+    FirebaseRecyclerAdapter<UserModel,AllUsersActivity.UsersViewHolder> firebaseRecyclerAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-
         receiver_id=getIntent().getExtras().get("receiver_id").toString();
         receiver_name=getIntent().getExtras().get("receiver_name").toString();
+        mAuth=FirebaseAuth.getInstance();
+        messageSenderID=mAuth.getCurrentUser().getUid();
+        userDataReference= FirebaseDatabase.getInstance().getReference().child("Users").child(receiver_id);
+        rootReference= FirebaseDatabase.getInstance().getReference();
+
+
+
         showInfoMessage(receiver_name);
         showInfoMessage(receiver_id);
 
@@ -59,12 +78,11 @@ public class ChatActivity extends BaseActivity {
         inputMessage=findViewById(R.id.input_message);
         toolbar=findViewById(R.id.chat_toolbar);
         setSupportActionBar(toolbar);
+        messagesRecycler=findViewById(R.id.messages_recycler);
+        adapter=new MessageAdapter(messageList,messageSenderID,receiver_id);
+
        // getSupportActionBar().setTitle("Chats");
 
-        mAuth=FirebaseAuth.getInstance();
-        userDataReference= FirebaseDatabase.getInstance().getReference().child("Users").child(receiver_id);
-        rootReference= FirebaseDatabase.getInstance().getReference();
-        messageSenderID=mAuth.getCurrentUser().getUid();
 
         ActionBar actionBar=getSupportActionBar();
 
@@ -118,6 +136,43 @@ public class ChatActivity extends BaseActivity {
                 sendMessageFun();
             }
         });
+        messagesRecycler.setLayoutManager(new LinearLayoutManager(this));
+        messagesRecycler.setAdapter(adapter);
+        userDataReference.keepSynced(true);
+        FetchMessages();
+    }
+
+    private void FetchMessages() {
+
+        rootReference.child("Messages").child(messageSenderID).child(receiver_id).addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                Messages messages=dataSnapshot.getValue(Messages.class);
+                messageList.add(messages);
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void sendMessageFun() {
@@ -139,6 +194,7 @@ public class ChatActivity extends BaseActivity {
             messageTextBody.put("seen",false);
             messageTextBody.put("type","text");
             messageTextBody.put("time", ServerValue.TIMESTAMP);
+            messageTextBody.put("from", messageSenderID);
 
             Map messageBodyDetail=new HashMap();
             messageBodyDetail.put(message_sender_ref+"/"+message_push_id,messageTextBody);
